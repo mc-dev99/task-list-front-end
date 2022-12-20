@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TaskList from './components/TaskList.js';
+import NewTaskForm from './components/NewTaskForm.js';
 import './App.css';
 import axios from 'axios';
 
@@ -57,13 +58,28 @@ const deleteTaskAsync = (id) => {
   // response. it returns a status message structure:
   // { "details": "Task 3 \"do the other thing\" successfully deleted" }
   return axios
-    .delete(`$https://task-list-api-c17.herokuapp.com/tasks/${id}`)
+    .delete(`https://task-list-api-c17.herokuapp.com/tasks/${id}`)
     .catch((err) => {
       console.log(err);
 
       // anything we throw will skip over any intervening then clauses to become
       // the input to the next catch clause
       throw new Error(`error deleting task ${id}`);
+    });
+};
+
+const createTaskAsync = (title, description) => {
+  const newTask = {
+    title: title,
+    description: description,
+  };
+  return axios
+    .post('https://task-list-api-c17.herokuapp.com/tasks', newTask)
+    .then((response) => {
+      return taskApiToJson(response.data.task);
+    })
+    .catch((err) => {
+      console.log(err);
     });
 };
 
@@ -133,6 +149,14 @@ const App = () => {
       });
   };
 
+  const createTask = (title, description) => {
+    return createTaskAsync(title, description)
+      .then((newTask) => {
+        setTasksData([...tasksData, newTask]);
+      })
+      .catch((err) => console.log(err));
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -147,6 +171,7 @@ const App = () => {
               onDeleteTasksData={deleteTask}
             />
           }
+          <NewTaskForm onCreateTasksData={createTask}></NewTaskForm>
         </div>
       </main>
     </div>
